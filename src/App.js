@@ -23,6 +23,7 @@ class App extends React.Component {
     }
   }
 
+  // Shows or hides notification
   toggleSnackBar = () => {
     if(this.state.snackBarOpen) {
       this.setState({ snackBarMessage: '' })
@@ -30,6 +31,7 @@ class App extends React.Component {
     this.setState({ snackBarOpen: !this.state.snackBarOpen })
   }
 
+  // Populates characters based on the provided URL
   fetchCharacters = (url) => {
     axios.get(url)
     .then((result) => {
@@ -40,11 +42,16 @@ class App extends React.Component {
     })
   }
 
+  // React lifecycle function
   componentDidMount() {
+    // initially fetches all characters
     this.fetchCharacters(this.state.apiURL)
+
+    // Populates favourites characters from local storage
     this.setState({ saved: localStorage.getItem('savedCharacters') ? JSON.parse(localStorage.getItem('savedCharacters')) : [] })
   }
 
+  // Passes api url based on search string entered
   searchCharacters(text) {
     if(text){
       this.fetchCharacters(this.state.apiURL + "&offset=0&nameStartsWith=" + text)
@@ -54,16 +61,19 @@ class App extends React.Component {
     }
   }
 
+  // Pagination  > next page
   loadNext = () => {
     this.fetchCharacters(this.state.apiURL + "&offset=" + (this.state.offset + 3) + (this.state.search ? ("&nameStartsWith=" + this.state.search) : "" ))
     this.setState({ offset:  this.state.offset + 3})
   }
 
+  // Pagination > previous page
   loadPrev = () => {
     this.fetchCharacters(this.state.apiURL + "&offset=" + (this.state.offset - 3) + (this.state.search ? ("&nameStartsWith=" + this.state.search) : "" ))
     this.setState({ offset:  this.state.offset - 3})
   }
 
+  // Checks if a character is already under favourites 
   checkSaved = (id) => {
     if(this.state.saved.filter(charac => charac.id === id).length > 0 ){
       return true
@@ -72,6 +82,7 @@ class App extends React.Component {
     }
   }
 
+  // Saves a character to favourites (under browser local storage)
   saveCharacter = (data) => {
     let characters = this.state.saved;
     characters.push(data);
@@ -79,6 +90,7 @@ class App extends React.Component {
     this.setState({ saved: characters })
   }
 
+  // Removed a character from favourites (under browser local storage)
   deleteCharacter = (data) => {
     let characters = this.state.saved;
     const index = characters.findIndex((chars) => { return chars.id === data.id })
@@ -93,6 +105,7 @@ class App extends React.Component {
     }
     return (
       <div className="App">
+        {/**Begin Interface */}
         <div className="search-bar">
           <TextField
             placeholder="Enter character name"
@@ -163,6 +176,9 @@ class App extends React.Component {
         <Button variant="contained" color="primary" startIcon={<Favorite />} onClick={() => this.setState({savedDrawerOpen: true})}>
           View Favourites
         </Button>
+        {/**End Interface */}
+
+        {/* Drawer to view favourite characters*/}
         <Drawer anchor="right" open={this.state.savedDrawerOpen} onClose={() => { this.setState({ savedDrawerOpen: false }) }}>
           <List className="list">
             {
@@ -182,6 +198,8 @@ class App extends React.Component {
             }
           </List>
         </Drawer>
+
+        {/* Drawer to view current character details*/}
         <Drawer open={this.state.DrawerOpen} onClose={() => { this.setState({ DrawerOpen: false, currentCharacter: null}) }}>
           {
             this.state.currentCharacter && 
@@ -233,6 +251,8 @@ class App extends React.Component {
             </div>
           }
         </Drawer>
+
+        {/* Snackbar for notifications*/}
         <Snackbar
           anchorOrigin={{
             vertical: 'bottom',
